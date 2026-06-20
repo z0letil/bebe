@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👾 SYSTEM ALERT 👾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            box-sizing: border-box; 
+            image-rendering: pixelated; /* Forces crisp edges on pixel fonts and assets */
+            -webkit-user-select: none; /* Prevents text highlighting while dragging */
+            user-select: none;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Press Start 2P', monospace;
+            background-color: #2c163f; /* Deep Purple */
+            color: #fff;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+        .hidden { display: none !important; }
+
+        /* Retro 8-bit Pixel Box Styling (Popups) */
+        .pixel-box {
+            background: #3d1e5a;
+            border: 4px solid #ff79c6; /* Vibrant Pink */
+            box-shadow: 
+                0 0 0 4px #3d1e5a, 
+                0 8px 0 0 rgba(0,0,0,0.4);
+            padding: 24px; 
+            width: 88%; max-width: 340px;
+            text-align: center; 
+            animation: popIn 0.2s steps(4);
+            position: relative;
+            z-index: 100;
+        }
+        .pixel-box h3 { 
+            margin: 0 0 15px 0; 
+            font-size: 13px; 
+            color: #ff79c6; 
+            line-height: 1.4;
+        }
+        .pixel-box p { 
+            margin: 0 0 25px 0; 
+            font-size: 9px; 
+            color: #f8f8f2; 
+            line-height: 1.6;
+        }
+        
+        /* Pixel Menu Buttons */
+        .pixel-btn {
+            font-family: 'Press Start 2P', monospace;
+            background: #ff79c6; 
+            color: #2c163f; 
+            border: none;
+            padding: 12px 10px; 
+            font-size: 10px; 
+            font-weight: bold;
+            width: 100%; 
+            cursor: pointer;
+            box-shadow: 
+                inset -3px -3px 0px 0px #bd4084,
+                0 4px 0px 0px #1a0b29;
+            text-transform: uppercase;
+        }
+        .pixel-btn:active {
+            box-shadow: inset 3px 3px 0px 0px #bd4084;
+            transform: translateY(4px);
+        }
+        .pixel-btn.purple-btn {
+            background: #8be9fd;
+            color: #2c163f;
+            box-shadow: 
+                inset -3px -3px 0px 0px #41b3cd,
+                0 4px 0px 0px #1a0b29;
+        }
+
+        /* Step 3: Selection Screen */
+        #selection-screen {
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%; height: 100%; justify-content: center; padding: 20px;
+            background: #1e0f2b;
+        }
+        #selection-screen h2 { 
+            font-size: 11px; 
+            text-align: center; 
+            color: #ff79c6; 
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+        .choices-container {
+            display: flex; width: 100%; max-width: 450px;
+            justify-content: center; position: relative; height: 190px;
+        }
+        .card-wrapper {
+            width: 44%; height: 100%;
+            transition: all 0.25s steps(6);
+            position: absolute;
+        }
+        #wrapper-a { left: 4%; }
+        #wrapper-b { right: 4%; }
+
+        /* Photo Selection Cards */
+        .photo-card {
+            width: 100%; height: 100%; 
+            background: #3d1e5a;
+            border: 4px solid #ff79c6; 
+            box-shadow: 0 0 0 4px #3d1e5a;
+            padding: 8px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between; cursor: pointer;
+        }
+        .photo-card img {
+            width: 100%; height: 110px; 
+            object-fit: cover; 
+            border: 2px solid #2c163f;
+        }
+        .photo-card span { 
+            font-size: 8px; 
+            margin-top: 8px; 
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        /* Step 6: Loading Screen */
+        #loading-screen { text-align: center; }
+
+        /* Step 7: Gift Box Screen */
+        #gift-screen { text-align: center; }
+        .gift-box { 
+            font-size: 64px; 
+            animation: bounce 0.6s infinite alternate steps(4); 
+            cursor: pointer;
+            display: inline-block;
+        }
+        .gift-text {
+            margin-top: 25px; 
+            font-size: 9px; 
+            color: #ff79c6; 
+            line-height: 1.6;
+        }
+
+        /* Step 8: Final Overwhelming Celebration Screen */
+        #final-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2c163f 0%, #511f5e 100%);
+            overflow: hidden; 
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .celebration-content {
+            text-align: center; 
+            z-index: 99999; /* Stays above the messy photos */
+            position: relative;
+            pointer-events: none; /* Let touches click items behind the text edges */
+        }
+        .banner-box {
+            background: rgba(61, 30, 90, 0.95);
+            border: 6px double #ff79c6;
+            padding: 25px;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.5);
+            pointer-events: auto; /* Allow blocking interactions directly on the card */
+        }
+        .banner {
+            font-size: 18px; color: #ff79c6; 
+            text-shadow: 4px 4px 0px #2c163f;
+            line-height: 1.6; margin: 0 0 15px 0; 
+            animation: pulse 1s infinite alternate steps(3);
+        }
+        .sub-banner {
+            font-size: 9px; color: #8be9fd; line-height: 1.5; margin: 0;
+        }
+
+        /* Photo/Video Burst Items Layer (Styled like image_af840d.png) */
+        .burst-item {
+            position: absolute; 
+            width: 140px; /* Great base size for phone screens */
+            height: auto; 
+            border: 4px solid #ff3333; /* Red alert borders matching original reference */
+            background: #000;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.4);
+            z-index: 1005; 
+            opacity: 0;
+            animation: burstIn 0.4s steps(4) forwards;
+            object-fit: cover;
+            cursor: grab;
+            touch-action: none; /* Crucial: stops phone screens from scrolling while dragging */
+        }
+        .burst-item:active { cursor: grabbing; }
+        .burst-item.video-item { width: 180px; height: 135px; }
+
+        /* Pixel Heart Details */
+        .pixel-heart {
+            font-size: 24px; margin-bottom: 15px;
+            animation: pulse 0.5s infinite alternate steps(2);
+        }
+
+        /* Retro Timing Animations */
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes burstIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-16px); } }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.06); } }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" src="hbd-8bit.mp3" loop></audio>
+
+    <div id="popup-error" class="pixel-box">
+        <h3>⚠️ ERROR_404</h3>
+        <p>CRITICAL GLITCH: Page asset validation sequence failed.</p>
+        <button class="pixel-btn" onclick="showVirusPopup()">RETRY</button>
+    </div>
+
+    <div id="popup-virus" class="pixel-box hidden">
+        <h3>👾 VIRUS.EXE</h3>
+        <p>Large localized malware overrun detected. Identity required to isolate threat.</p>
+        <button class="pixel-btn purple-btn" onclick="showSelectionScreen()">FIX NOW</button>
+    </div>
+
+    <div id="selection-screen" class="hidden">
+        <h2>CHOOSE YOUR FAVORITE PERSON:</h2>
+        <div class="choices-container">
+            <div id="wrapper-a" class="card-wrapper" onclick="handleChoiceA()">
+                <div class="photo-card">
+                    <img src="picture-a_compressed.jpg" alt="Picture A">
+                    <span>ENOB</span>
+                </div>
+            </div>
+            <div id="wrapper-b" class="card-wrapper" onclick="handleChoiceB()">
+                <div class="photo-card" style="border-color: #8be9fd;">
+                    <img src="picture-b_compressed.jpg" alt="Picture B">
+                    <span>ME</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-chosen-b" class="pixel-box hidden">
+        <h3>HEH... 😏😏😏</h3>
+        <p>Oh! You picked ME over EBOMBOM? For realll?...</p>
+        <button class="pixel-btn" onclick="showLovePopup()">YES</button>
+    </div>
+
+    <div id="popup-love" class="pixel-box hidden">
+        <div class="pixel-heart">💖</div>
+        <h3>OVERRIDE ACTIVE</h3>
+        <p>Oh my---, you chose me over ebob??? I love you too...</p>
+        <button class="pixel-btn purple-btn" onclick="startLoading()">AWWW (*'-'*)</button>
+    </div>
+
+    <div id="loading-screen" class="hidden">
+        <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHN6cmQ3bzVhYTNjbWt4ZGZpcXpxeXN5Nmp5cW5yMWhlM2x4dThpZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7xqRFGrGcC1UgZ6jUk/giphy.gif" alt="Loading..." style="width: 100px; height: 100px; margin-bottom: 20px; object-fit: contain;">
+        <p style="font-size: 9px; color: #ff79c6;">EXTRACTING SURPRISE_DATA...</p>
+    </div>
+
+    <div id="gift-screen" class="hidden">
+        <div class="gift-box" onclick="celebrate()">🎁</div>
+        <div class="gift-text">TAPIT!</div>
+    </div>
+
+    <div id="final-screen" class="hidden">
+        
+        <div id="burst-media-container"></div>
+
+        <div class="celebration-content">
+            <div class="banner-box">
+                <h1 class="banner">🎉 HAPPY BIRTHDAY<br>BEBE! 🎉</h1>
+                <div class="sub-banner">YAY!<br>love you always! marami!<br>mwamwamwamwamwa</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURATION ARRAY FOR THE OVERWHELMING WINDOW POP BURST ---
+        // Change these 35 names to match your compressed files exactly!
+        const yourMediaItems = [
+            { type: 'image', src: 'photo-1_compressed.jpg' }, { type: 'image', src: 'photo-2_compressed.jpg' },
+            { type: 'image', src: 'photo-3_compressed.jpg' }, { type: 'image', src: 'photo-4_compressed.jpg' },
+            { type: 'image', src: 'photo-5_compressed.jpg' }, { type: 'image', src: 'photo-6_compressed.jpg' },
+            { type: 'image', src: 'photo-7_compressed.jpg' }, { type: 'image', src: 'photo-8_compressed.jpg' },
+            { type: 'image', src: 'photo-9_compressed.jpg' }, { type: 'image', src: 'photo-10_compressed.jpg' },
+            { type: 'image', src: 'photo-11_compressed.jpg' }, { type: 'image', src: 'photo-12_compressed.jpg' },
+            { type: 'image', src: 'photo-13_compressed.jpg' }, { type: 'image', src: 'photo-14_compressed.jpg' },
+            { type: 'image', src: 'photo-15_compressed.jpg' }, { type: 'image', src: 'photo-16_compressed.jpg' },
+            { type: 'image', src: 'photo-17_compressed.jpg' }, { type: 'image', src: 'photo-18_compressed.jpg' },
+            { type: 'image', src: 'photo-19_compressed.jpg' }, { type: 'image', src: 'photo-20_compressed.jpg' },
+            { type: 'image', src: 'photo-21_compressed.jpg' }, { type: 'image', src: 'photo-22_compressed.jpg' },
+            { type: 'image', src: 'photo-23_compressed.jpg' }, { type: 'image', src: 'photo-24_compressed.jpg' },
+            { type: 'image', src: 'photo-25_compressed.jpg' }, { type: 'image', src: 'photo-26_compressed.jpg' },
+            { type: 'image', src: 'photo-27.jpg' }, { type: 'video', src: 'vid1(1).mp4' },
+            { type: 'video', src: 'vid2(1).mp4' }, { type: 'video', src: 'vid3(1).mp4' },
+            { type: 'video', src: 'vid4(1).mp4' }, { type: 'gif', src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExdzU5NGVqcWszbWRsZ2FsbzBxd3RiMGdzMzJ2ZHFmdDlrdDk4YzJmMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Mot2nz72u4HFHEw3Fr/giphy.gif' },
+            { type: 'gif', src: 'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcW9pcG1yeWl3am45bHNuY2Y3N2l4amJ1eDZ1cGF1cHpzN2xsaG8wMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/tyiGW96fgPghz86SKx/giphy.gif' }, { type: 'image', src: 'photo34.jpg' },
+            { type: 'gif', src: 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbjV5eW94ZXg0OHlzdTB4ZGdzaHd0MHdnbWE3bmp6eGUydmo5bnNpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/sg3JambRg9UlX3fq5G/giphy.gif' }
+        ];
+
+        let isSwapped = false;
+        let globalZIndex = 1010; // Tracker to make sure clicked items stay on top
+
+        // --- 2. FLOW STATE ROUTER ENGINE ---
+        function showVirusPopup() {
+            document.getElementById('popup-error').classList.add('hidden');
+            document.getElementById('popup-virus').classList.remove('hidden');
+        }
+
+        function showSelectionScreen() {
+            document.getElementById('popup-virus').classList.add('hidden');
+            document.getElementById('selection-screen').classList.remove('hidden');
+        }
+
+        function handleChoiceA() {
+            const wrapA = document.getElementById('wrapper-a');
+            const wrapB = document.getElementById('wrapper-b');
+
+            if (!isSwapped) {
+                wrapA.style.left = "auto";
+                wrapA.style.right = "4%";
+                wrapB.style.right = "auto";
+                wrapB.style.left = "4%";
+                isSwapped = true;
+            } else {
+                confirmBSelection();
+            }
+        }
+
+        function handleChoiceB() {
+            confirmBSelection();
+        }
+
+        function confirmBSelection() {
+            document.getElementById('selection-screen').classList.add('hidden');
+            document.getElementById('popup-chosen-b').classList.remove('hidden');
+        }
+
+        function showLovePopup() {
+            document.getElementById('popup-chosen-b').classList.add('hidden');
+            document.getElementById('popup-love').classList.remove('hidden');
+        }
+
+        function startLoading() {
+            document.getElementById('popup-love').classList.add('hidden');
+            document.getElementById('loading-screen').classList.remove('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('loading-screen').classList.add('hidden');
+                document.getElementById('gift-screen').classList.remove('hidden');
+            }, 2500);
+        }
+
+        // --- 3. DYNAMIC MEDIA BURST + TOUCH/MOUSE DRAG ENGINE ---
+        function initiateBurst() {
+            const container = document.getElementById('burst-media-container');
+            
+            yourMediaItems.forEach((item, index) => {
+                let mediaElement;
+                if (item.type === 'video') {
+                    mediaElement = document.createElement('video');
+                    mediaElement.className = 'burst-item video-item';
+                    mediaElement.autoplay = true; 
+                    mediaElement.loop = true; 
+                    mediaElement.muted = true;
+                    mediaElement.playsinline = true; 
+                } else {
+                    mediaElement = document.createElement('img');
+                    mediaElement.className = 'burst-item';
+                }
+                
+                mediaElement.src = item.src;
+
+                // Screen spacing computations
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+                
+                const itemWidth = (item.type === 'video') ? 180 : 140; 
+                const itemHeight = (item.type === 'video') ? 135 : 140;
+
+                const left = Math.random() * (screenWidth - itemWidth);
+                const top = Math.random() * (screenHeight - itemHeight);
+                const randomRotate = (Math.random() - 0.5) * 20; 
+
+                mediaElement.style.left = `${left}px`;
+                mediaElement.style.top = `${top}px`;
+                mediaElement.style.transform = `rotate(${randomRotate}deg)`;
+                mediaElement.style.animationDelay = `${index * 0.06}s`;
+
+                // --- INTEGRATED MOBILE DRAGGING SCRIPT ---
+                let isDragging = false;
+                let startX, startY, initialLeft, initialTop;
+
+                function startDrag(e) {
+                    isDragging = true;
+                    
+                    // Increment and update z-index layer instantly on tap
+                    globalZIndex++;
+                    mediaElement.style.zIndex = globalZIndex;
+                    
+                    // Kills the entry animation tracking frames so drag inputs match raw positions
+                    mediaElement.style.animation = 'none';
+
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                    startX = clientX;
+                    startY = clientY;
+                    initialLeft = parseInt(mediaElement.style.left) || 0;
+                    initialTop = parseInt(mediaElement.style.top) || 0;
+
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                function doDrag(e) {
+                    if (!isDragging) return;
+
+                    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                    const deltaX = clientX - startX;
+                    const deltaY = clientY - startY;
+
+                    mediaElement.style.left = `${initialLeft + deltaX}px`;
+                    mediaElement.style.top = `${initialTop + deltaY}px`;
+                }
+
+                function stopDrag() {
+                    isDragging = false;
+                }
+
+                // Desktop Mouse Listeners
+                mediaElement.addEventListener('mousedown', startDrag);
+                window.addEventListener('mousemove', doDrag);
+                window.addEventListener('mouseup', stopDrag);
+
+                // Mobile Touch Listeners 
+                mediaElement.addEventListener('touchstart', startDrag, { passive: false });
+                window.addEventListener('touchmove', doDrag, { passive: false });
+                window.addEventListener('touchend', stopDrag);
+
+                container.appendChild(mediaElement);
+            });
+        }
+
+        function celebrate() {
+            document.getElementById('gift-screen').classList.add('hidden');
+            document.getElementById('final-screen').classList.remove('hidden');
+            
+            initiateBurst();
+
+            const music = document.getElementById('bg-music');
+            music.play().catch(error => console.log("Audio play blocked: ", error));
+        }
+    </script>
+</body>
+</html>
